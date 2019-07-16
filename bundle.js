@@ -853,53 +853,6 @@ var _Basics_xor = F2(function(a, b) { return a !== b; });
 
 
 
-function _Char_toCode(char)
-{
-	var code = char.charCodeAt(0);
-	if (0xD800 <= code && code <= 0xDBFF)
-	{
-		return (code - 0xD800) * 0x400 + char.charCodeAt(1) - 0xDC00 + 0x10000
-	}
-	return code;
-}
-
-function _Char_fromCode(code)
-{
-	return _Utils_chr(
-		(code < 0 || 0x10FFFF < code)
-			? '\uFFFD'
-			:
-		(code <= 0xFFFF)
-			? String.fromCharCode(code)
-			:
-		(code -= 0x10000,
-			String.fromCharCode(Math.floor(code / 0x400) + 0xD800, code % 0x400 + 0xDC00)
-		)
-	);
-}
-
-function _Char_toUpper(char)
-{
-	return _Utils_chr(char.toUpperCase());
-}
-
-function _Char_toLower(char)
-{
-	return _Utils_chr(char.toLowerCase());
-}
-
-function _Char_toLocaleUpper(char)
-{
-	return _Utils_chr(char.toLocaleUpperCase());
-}
-
-function _Char_toLocaleLower(char)
-{
-	return _Utils_chr(char.toLocaleLowerCase());
-}
-
-
-
 var _String_cons = F2(function(chr, str)
 {
 	return chr + str;
@@ -1209,6 +1162,53 @@ function _String_fromList(chars)
 	return _List_toArray(chars).join('');
 }
 
+
+
+
+function _Char_toCode(char)
+{
+	var code = char.charCodeAt(0);
+	if (0xD800 <= code && code <= 0xDBFF)
+	{
+		return (code - 0xD800) * 0x400 + char.charCodeAt(1) - 0xDC00 + 0x10000
+	}
+	return code;
+}
+
+function _Char_fromCode(code)
+{
+	return _Utils_chr(
+		(code < 0 || 0x10FFFF < code)
+			? '\uFFFD'
+			:
+		(code <= 0xFFFF)
+			? String.fromCharCode(code)
+			:
+		(code -= 0x10000,
+			String.fromCharCode(Math.floor(code / 0x400) + 0xD800, code % 0x400 + 0xDC00)
+		)
+	);
+}
+
+function _Char_toUpper(char)
+{
+	return _Utils_chr(char.toUpperCase());
+}
+
+function _Char_toLower(char)
+{
+	return _Utils_chr(char.toLowerCase());
+}
+
+function _Char_toLocaleUpper(char)
+{
+	return _Utils_chr(char.toLocaleUpperCase());
+}
+
+function _Char_toLocaleLower(char)
+{
+	return _Utils_chr(char.toLocaleLowerCase());
+}
 
 
 
@@ -4392,25 +4392,262 @@ var elm$core$Set$toList = function (_n0) {
 	return elm$core$Dict$keys(dict);
 };
 var author$project$Main$initModel = {name: '', playerId: elm$core$Maybe$Nothing, players: _List_Nil, plays: _List_Nil};
-var elm$core$Debug$log = _Debug_log;
-var author$project$Main$update = F2(
-	function (msg, model) {
-		if (msg.$ === 'Input') {
-			var name = msg.a;
-			return A2(
-				elm$core$Debug$log,
-				'My model:',
-				_Utils_update(
-					model,
-					{name: name}));
-		} else {
-			return model;
+var elm$core$Basics$eq = _Utils_equal;
+var elm$core$Basics$mul = _Basics_mul;
+var elm$core$Basics$neq = _Utils_notEqual;
+var elm$core$Basics$sub = _Basics_sub;
+var elm$core$Basics$add = _Basics_add;
+var elm$core$Basics$gt = _Utils_gt;
+var elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
 		}
 	});
-var author$project$Main$Input = function (a) {
-	return {$: 'Input', a: a};
+var elm$core$List$reverse = function (list) {
+	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
 };
-var author$project$Main$Save = {$: 'Save'};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var author$project$Main$deletePlay = F2(
+	function (model, playyyy) {
+		var newPlays = A2(
+			elm$core$List$filter,
+			function (p) {
+				return !_Utils_eq(p.id, playyyy.id);
+			},
+			model.plays);
+		var newPlayers = A2(
+			elm$core$List$map,
+			function (playeeer) {
+				return _Utils_eq(playeeer.id, playyyy.playerId) ? _Utils_update(
+					playeeer,
+					{points: playeeer.points - (1 * playyyy.points)}) : playeeer;
+			},
+			model.players);
+		return _Utils_update(
+			model,
+			{players: newPlayers, plays: newPlays});
+	});
+var author$project$Main$Player = F3(
+	function (id, name, points) {
+		return {id: id, name: name, points: points};
+	});
+var elm$core$List$length = function (xs) {
+	return A3(
+		elm$core$List$foldl,
+		F2(
+			function (_n0, i) {
+				return i + 1;
+			}),
+		0,
+		xs);
+};
+var author$project$Main$add = function (model) {
+	var player2 = A3(
+		author$project$Main$Player,
+		elm$core$List$length(model.players),
+		model.name,
+		0);
+	var newPlayers = A2(elm$core$List$cons, player2, model.players);
+	return _Utils_update(
+		model,
+		{name: '', players: newPlayers});
+};
+var author$project$Main$edit = F2(
+	function (model, id) {
+		var newPlays = A2(
+			elm$core$List$map,
+			function (pla) {
+				return _Utils_eq(pla.playerId, id) ? _Utils_update(
+					pla,
+					{name: model.name}) : pla;
+			},
+			model.plays);
+		var newPlayers = A2(
+			elm$core$List$map,
+			function (player0) {
+				return _Utils_eq(player0.id, id) ? _Utils_update(
+					player0,
+					{name: model.name}) : player0;
+			},
+			model.players);
+		return _Utils_update(
+			model,
+			{name: '', playerId: elm$core$Maybe$Nothing, players: newPlayers, plays: newPlays});
+	});
+var author$project$Main$save = function (model) {
+	var _n0 = model.playerId;
+	if (_n0.$ === 'Just') {
+		var id = _n0.a;
+		return A2(author$project$Main$edit, model, id);
+	} else {
+		return author$project$Main$add(model);
+	}
+};
+var author$project$Main$Play = F4(
+	function (id, playerId, name, points) {
+		return {id: id, name: name, playerId: playerId, points: points};
+	});
+var author$project$Main$score = F3(
+	function (model, scorer, points) {
+		var playyyy = A4(
+			author$project$Main$Play,
+			elm$core$List$length(model.plays),
+			scorer.id,
+			scorer.name,
+			points);
+		var newPlayers = A2(
+			elm$core$List$map,
+			function (plyer) {
+				return _Utils_eq(plyer.id, scorer.id) ? _Utils_update(
+					plyer,
+					{points: plyer.points + points}) : plyer;
+			},
+			model.players);
+		return _Utils_update(
+			model,
+			{
+				players: newPlayers,
+				plays: A2(elm$core$List$cons, playyyy, model.plays)
+			});
+	});
+var elm$core$Debug$log = _Debug_log;
+var elm$core$Maybe$Just = function (a) {
+	return {$: 'Just', a: a};
+};
+var elm$core$String$isEmpty = function (string) {
+	return string === '';
+};
+var author$project$Main$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'Input':
+				var name = msg.a;
+				return A2(
+					elm$core$Debug$log,
+					'My model:',
+					_Utils_update(
+						model,
+						{name: name}));
+			case 'Cancel':
+				return _Utils_update(
+					model,
+					{name: '', playerId: elm$core$Maybe$Nothing});
+			case 'Save':
+				return elm$core$String$isEmpty(model.name) ? model : author$project$Main$save(model);
+			case 'Score':
+				var playerrr = msg.a;
+				var points = msg.b;
+				return A3(author$project$Main$score, model, playerrr, points);
+			case 'Edit':
+				var playyer = msg.a;
+				return _Utils_update(
+					model,
+					{
+						name: playyer.name,
+						playerId: elm$core$Maybe$Just(playyer.id)
+					});
+			default:
+				var play1 = msg.a;
+				return A2(author$project$Main$deletePlay, model, play1);
+		}
+	});
+var author$project$Main$DeletePlay = function (a) {
+	return {$: 'DeletePlay', a: a};
+};
+var elm$core$String$fromInt = _String_fromNumber;
 var elm$core$Basics$identity = function (x) {
 	return x;
 };
@@ -4446,28 +4683,6 @@ var elm$core$Array$SubTree = function (a) {
 	return {$: 'SubTree', a: a};
 };
 var elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
-var elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
-var elm$core$List$reverse = function (list) {
-	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
-};
 var elm$core$Array$compressNodes = F2(
 	function (nodes, acc) {
 		compressNodes:
@@ -4494,7 +4709,6 @@ var elm$core$Basics$apR = F2(
 	function (x, f) {
 		return f(x);
 	});
-var elm$core$Basics$eq = _Utils_equal;
 var elm$core$Tuple$first = function (_n0) {
 	var x = _n0.a;
 	return x;
@@ -4515,19 +4729,15 @@ var elm$core$Array$treeFromBuilder = F2(
 			}
 		}
 	});
-var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
 	});
 var elm$core$Basics$floor = _Basics_floor;
-var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$max = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) > 0) ? x : y;
 	});
-var elm$core$Basics$mul = _Basics_mul;
-var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Elm$JsArray$length = _JsArray_length;
 var elm$core$Array$builderToArray = F2(
 	function (reverseNodeList, builder) {
@@ -4594,9 +4804,6 @@ var elm$core$Array$initialize = F2(
 			return A5(elm$core$Array$initializeHelp, fn, initialFromIndex, len, _List_Nil, tail);
 		}
 	});
-var elm$core$Maybe$Just = function (a) {
-	return {$: 'Just', a: a};
-};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -4640,16 +4847,6 @@ var elm$core$Char$isDigit = function (_char) {
 var elm$core$Char$isAlphaNum = function (_char) {
 	return elm$core$Char$isLower(_char) || (elm$core$Char$isUpper(_char) || elm$core$Char$isDigit(_char));
 };
-var elm$core$List$length = function (xs) {
-	return A3(
-		elm$core$List$foldl,
-		F2(
-			function (_n0, i) {
-				return i + 1;
-			}),
-		0,
-		xs);
-};
 var elm$core$List$map2 = _List_map2;
 var elm$core$List$rangeHelp = F3(
 	function (lo, hi, list) {
@@ -4684,7 +4881,6 @@ var elm$core$List$indexedMap = F2(
 			xs);
 	});
 var elm$core$String$all = _String_all;
-var elm$core$String$fromInt = _String_fromNumber;
 var elm$core$String$join = F2(
 	function (sep, chunks) {
 		return A2(
@@ -4823,9 +5019,9 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
-var elm$html$Html$button = _VirtualDom_node('button');
-var elm$html$Html$form = _VirtualDom_node('form');
-var elm$html$Html$input = _VirtualDom_node('input');
+var elm$html$Html$div = _VirtualDom_node('div');
+var elm$html$Html$i = _VirtualDom_node('i');
+var elm$html$Html$li = _VirtualDom_node('li');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$json$Json$Encode$string = _Json_wrap;
@@ -4836,6 +5032,102 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			key,
 			elm$json$Json$Encode$string(string));
 	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		elm$html$Html$Events$on,
+		'click',
+		elm$json$Json$Decode$succeed(msg));
+};
+var author$project$Main$play = function (playyy) {
+	return A2(
+		elm$html$Html$li,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$i,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('remove'),
+						elm$html$Html$Events$onClick(
+						author$project$Main$DeletePlay(playyy))
+					]),
+				_List_Nil),
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(playyy.name)
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(
+						elm$core$String$fromInt(playyy.points))
+					]))
+			]));
+};
+var elm$html$Html$ul = _VirtualDom_node('ul');
+var author$project$Main$playList = function (model) {
+	return A2(
+		elm$html$Html$ul,
+		_List_Nil,
+		A2(elm$core$List$map, author$project$Main$play, model.plays));
+};
+var elm$html$Html$header = _VirtualDom_node('header');
+var author$project$Main$playListHeader = A2(
+	elm$html$Html$header,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Plays')
+				])),
+			A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Points')
+				]))
+		]));
+var author$project$Main$playSection = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				author$project$Main$playListHeader,
+				author$project$Main$playList(model)
+			]));
+};
+var author$project$Main$Cancel = {$: 'Cancel'};
+var author$project$Main$Input = function (a) {
+	return {$: 'Input', a: a};
+};
+var author$project$Main$Save = {$: 'Save'};
+var elm$html$Html$button = _VirtualDom_node('button');
+var elm$html$Html$form = _VirtualDom_node('form');
+var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
@@ -4845,68 +5137,12 @@ var elm$html$Html$Events$alwaysStop = function (x) {
 var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
 			elm$virtual_dom$VirtualDom$on,
 			event,
 			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
 	});
 var elm$json$Json$Decode$field = _Json_decodeField;
 var elm$json$Json$Decode$at = F2(
@@ -4964,7 +5200,7 @@ var author$project$Main$playerForm = function (model) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$type_('text'),
-						elm$html$Html$Attributes$placeholder('Enter player name'),
+						elm$html$Html$Attributes$placeholder('Enter/edit player name'),
 						elm$html$Html$Events$onInput(author$project$Main$Input),
 						elm$html$Html$Attributes$value(model.name)
 					]),
@@ -4983,7 +5219,8 @@ var author$project$Main$playerForm = function (model) {
 				elm$html$Html$button,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$type_('button')
+						elm$html$Html$Attributes$type_('button'),
+						elm$html$Html$Events$onClick(author$project$Main$Cancel)
 					]),
 				_List_fromArray(
 					[
@@ -4991,9 +5228,150 @@ var author$project$Main$playerForm = function (model) {
 					]))
 			]));
 };
-var elm$html$Html$div = _VirtualDom_node('div');
+var author$project$Main$Edit = function (a) {
+	return {$: 'Edit', a: a};
+};
+var author$project$Main$Score = F2(
+	function (a, b) {
+		return {$: 'Score', a: a, b: b};
+	});
+var author$project$Main$player = function (playerr) {
+	return A2(
+		elm$html$Html$li,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$i,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('edit'),
+						elm$html$Html$Events$onClick(
+						author$project$Main$Edit(playerr))
+					]),
+				_List_Nil),
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(playerr.name)
+					])),
+				A2(
+				elm$html$Html$button,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$type_('button'),
+						elm$html$Html$Events$onClick(
+						A2(author$project$Main$Score, playerr, 2))
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('2pts')
+					])),
+				A2(
+				elm$html$Html$button,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$type_('button'),
+						elm$html$Html$Events$onClick(
+						A2(author$project$Main$Score, playerr, 3))
+					]),
+				_List_fromArray(
+					[
+						elm$html$Html$text('3pts')
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(
+						elm$core$String$fromInt(playerr.points))
+					]))
+			]));
+};
+var elm$core$List$sortBy = _List_sortBy;
+var author$project$Main$playerList = function (model) {
+	return A2(
+		elm$html$Html$ul,
+		_List_Nil,
+		A2(
+			elm$core$List$map,
+			author$project$Main$player,
+			A2(
+				elm$core$List$sortBy,
+				function ($) {
+					return $.name;
+				},
+				model.players)));
+};
+var author$project$Main$playerListHeader = A2(
+	elm$html$Html$header,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Name')
+				])),
+			A2(
+			elm$html$Html$div,
+			_List_Nil,
+			_List_fromArray(
+				[
+					elm$html$Html$text('Points')
+				]))
+		]));
+var elm$core$List$sum = function (numbers) {
+	return A3(elm$core$List$foldl, elm$core$Basics$add, 0, numbers);
+};
+var elm$html$Html$footer = _VirtualDom_node('footer');
+var author$project$Main$pointTotal = function (model) {
+	var total = elm$core$List$sum(
+		A2(
+			elm$core$List$map,
+			function ($) {
+				return $.points;
+			},
+			model.plays));
+	return A2(
+		elm$html$Html$footer,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text('Total:')
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(
+						elm$core$String$fromInt(total))
+					]))
+			]));
+};
+var author$project$Main$playerSection = function (model) {
+	return A2(
+		elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				author$project$Main$playerListHeader,
+				author$project$Main$playerList(model),
+				author$project$Main$pointTotal(model)
+			]));
+};
 var elm$html$Html$h1 = _VirtualDom_node('h1');
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var author$project$Main$view = function (model) {
 	return A2(
 		elm$html$Html$div,
@@ -5010,7 +5388,9 @@ var author$project$Main$view = function (model) {
 					[
 						elm$html$Html$text('Score Keeper')
 					])),
-				author$project$Main$playerForm(model)
+				author$project$Main$playerSection(model),
+				author$project$Main$playerForm(model),
+				author$project$Main$playSection(model)
 			]));
 };
 var elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -5040,20 +5420,6 @@ var elm$core$Task$Perform = function (a) {
 };
 var elm$core$Task$succeed = _Scheduler_succeed;
 var elm$core$Task$init = elm$core$Task$succeed(_Utils_Tuple0);
-var elm$core$List$map = F2(
-	function (f, xs) {
-		return A3(
-			elm$core$List$foldr,
-			F2(
-				function (x, acc) {
-					return A2(
-						elm$core$List$cons,
-						f(x),
-						acc);
-				}),
-			_List_Nil,
-			xs);
-	});
 var elm$core$Task$andThen = _Scheduler_andThen;
 var elm$core$Task$map = F2(
 	function (func, taskA) {
@@ -5142,9 +5508,6 @@ var elm$core$String$startsWith = _String_startsWith;
 var elm$url$Url$Http = {$: 'Http'};
 var elm$url$Url$Https = {$: 'Https'};
 var elm$core$String$indexes = _String_indexes;
-var elm$core$String$isEmpty = function (string) {
-	return string === '';
-};
 var elm$core$String$left = F2(
 	function (n, string) {
 		return (n < 1) ? '' : A3(elm$core$String$slice, 0, n, string);
